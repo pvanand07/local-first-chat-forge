@@ -14,7 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      conversations: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          id: string
+          sync_status: string | null
+          title: string
+          updated_at: string
+          user_id: string | null
+          vector: Json | null
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          sync_status?: string | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+          vector?: Json | null
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          sync_status?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+          vector?: Json | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          device_id: string | null
+          id: string
+          role: string
+          sync_status: string | null
+          timestamp: number
+          vector: Json | null
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          role: string
+          sync_status?: string | null
+          timestamp?: number
+          vector?: Json | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          role?: string
+          sync_status?: string | null
+          timestamp?: number
+          vector?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
