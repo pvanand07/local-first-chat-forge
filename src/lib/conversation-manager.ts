@@ -176,9 +176,17 @@ class ConversationManager {
       // Clear cache to ensure fresh data on next load
       this.cache.delete(conversationId);
 
-      // Auto-generate conversation title if this is the first exchange
-      if (messages.length === 1) { // Only user message exists
-        this.generateConversationTitle(conversationId, content);
+      // Auto-generate conversation title if this is the first user message
+      // Check if this is the first user message by counting all user messages in DB
+      const allUserMessages = await db.messages
+        .where('conversation_id')
+        .equals(conversationId)
+        .and(m => m.role === 'user')
+        .count();
+      
+      if (allUserMessages === 1) {
+        // This is the first user message, generate title
+        await this.generateConversationTitle(conversationId, content);
       }
 
       return { userMessage, aiMessage };
@@ -212,9 +220,37 @@ class ConversationManager {
 
   private async generateConversationTitle(conversationId: string, firstMessage: string) {
     try {
-      // Generate a simple title from the first message
-      const words = firstMessage.split(' ').slice(0, 4);
-      const title = words.join(' ') + (firstMessage.split(' ').length > 4 ? '...' : '');
+      // Clean the message and generate a meaningful title
+      const cleanMessage = firstMessage.trim();
+      let title: string;
+
+      if (cleanMessage.length <= 50) {
+        // If message is short, use it as is
+        title = cleanMessage;
+      } else {
+        // For longer messages, take first meaningful part
+        const sentences = cleanMessage.split(/[.!?]+/);
+        const firstSentence = sentences[0].trim();
+        
+        if (firstSentence.length > 0 && firstSentence.length <= 60) {
+          title = firstSentence;
+        } else {
+          // Fall back to first 8-10 words for a more descriptive title
+          const words = cleanMessage.split(' ').slice(0, 10);
+          title = words.join(' ');
+          if (cleanMessage.split(' ').length > 10) {
+            title += '...';
+          }
+        }
+      }
+
+      // Ensure title is not empty and has reasonable length
+      if (!title || title.length < 3) {
+        title = 'New Conversation';
+      } else if (title.length > 80) {
+        title = title.substring(0, 77) + '...';
+      }
+
       await this.updateConversationTitle(conversationId, title);
     } catch (error) {
       console.error('Failed to generate conversation title:', error);
@@ -264,6 +300,99 @@ class ConversationManager {
   clearCache() {
     this.cache.clear();
     this.cacheOrder = [];
+  }
+
+  // Search functionality for both conversation titles and message content
+  async searchConversations(query: string): Promise<{
+    conversations: Conversation[];
+    messageResults: Array<{
+      conversation: Conversation;
+      matchingMessages: Array<{
+        message: Message;
+        score: number;
+        highlights: string;
+      }>;
+    }>;
+  }> {
+    try {
+      if (!query.trim()) {
+        // Return all conversations if no query
+        const conversations = await this.getConversations();
+        return { conversations, messageResults: [] };
+      }
+
+      // Search conversations by title
+      const allConversations = await this.getConversations();
+      const conversationsByTitle = allConversations.filter(conv =>
+        conv.title.toLowerCase().includes(query.toLowerCase())
+      );
+
+      // Search through message content
+      const messageSearchResults = await db.searchMessages(query);
+      
+      // Group message results by conversation
+      const messageResultsByConv = new Map<string, Array<{
+        message: Message;
+        score: number;
+        highlights: string;
+      }>>();
+
+      messageSearchResults.forEach(result => {
+        const convId = result.message.conversation_id;
+        if (!messageResultsByConv.has(convId)) {
+          messageResultsByConv.set(convId, []);
+        }
+        messageResultsByConv.get(convId)!.push(result);
+      });
+
+      // Get conversations that have matching messages
+      const conversationsWithMessages = new Set<string>();
+      const messageResults: Array<{
+        conversation: Conversation;
+        matchingMessages: Array<{
+          message: Message;
+          score: number;
+          highlights: string;
+        }>;
+      }> = [];
+
+      for (const [convId, messages] of messageResultsByConv) {
+        const conversation = allConversations.find(c => c.id === convId);
+        if (conversation) {
+          conversationsWithMessages.add(convId);
+          messageResults.push({
+            conversation,
+            matchingMessages: messages.sort((a, b) => b.score - a.score)
+          });
+        }
+      }
+
+      // Combine unique conversations (title matches + conversations with message matches)
+      const uniqueConversations = new Map<string, Conversation>();
+      
+      // Add title matches first (higher priority)
+      conversationsByTitle.forEach(conv => {
+        uniqueConversations.set(conv.id, conv);
+      });
+      
+      // Add conversations with message matches
+      messageResults.forEach(result => {
+        if (!uniqueConversations.has(result.conversation.id)) {
+          uniqueConversations.set(result.conversation.id, result.conversation);
+        }
+      });
+
+      return {
+        conversations: Array.from(uniqueConversations.values()),
+        messageResults: messageResults.sort((a, b) => 
+          Math.max(...b.matchingMessages.map(m => m.score)) - 
+          Math.max(...a.matchingMessages.map(m => m.score))
+        )
+      };
+    } catch (error) {
+      console.error('Search failed:', error);
+      return { conversations: [], messageResults: [] };
+    }
   }
 
   // Get cached conversations count for debugging

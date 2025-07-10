@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, MessageSquare, Search, MoreHorizontal, Edit2, Trash2, Settings } from 'lucide-react';
-import { Conversation } from '@/lib/database';
+import { Plus, MessageSquare, Search, MoreHorizontal, Edit2, Trash2, Settings, FileText } from 'lucide-react';
+import { Conversation, Message } from '@/lib/database';
+import { conversationManager } from '@/lib/conversation-manager';
 import { cn } from '@/lib/utils';
 
 interface ConversationSidebarProps {
@@ -19,6 +20,18 @@ interface ConversationSidebarProps {
   onSearch: (query: string) => void;
   isLoading?: boolean;
   className?: string;
+}
+
+interface SearchResults {
+  conversations: Conversation[];
+  messageResults: Array<{
+    conversation: Conversation;
+    matchingMessages: Array<{
+      message: Message;
+      score: number;
+      highlights: string;
+    }>;
+  }>;
 }
 
 export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
@@ -35,10 +48,37 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResults | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const filteredConversations = conversations.filter(conv =>
-    conv.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Perform search when query changes
+  useEffect(() => {
+    const performSearch = async () => {
+      if (!searchQuery.trim()) {
+        setSearchResults(null);
+        setIsSearching(false);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const results = await conversationManager.searchConversations(searchQuery);
+        setSearchResults(results);
+      } catch (error) {
+        console.error('Search failed:', error);
+        setSearchResults(null);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(performSearch, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
+  // Determine which conversations to show
+  const displayConversations = searchResults ? searchResults.conversations : conversations;
+  const hasMessageMatches = searchResults?.messageResults.length > 0;
 
   const handleRename = (conversation: Conversation) => {
     setEditingId(conversation.id);
@@ -124,23 +164,51 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
               setSearchQuery(e.target.value);
               onSearch(e.target.value);
             }}
-            placeholder="Search conversations..."
+            placeholder="Search conversations and messages..."
             className="pl-10"
           />
+          {isSearching && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            </div>
+          )}
         </div>
+        
+        {/* Search results info */}
+        {searchQuery && searchResults && (
+          <div className="mt-2 text-xs text-muted-foreground">
+            {searchResults.conversations.length} conversations found
+            {hasMessageMatches && ` (${searchResults.messageResults.length} with matching messages)`}
+          </div>
+        )}
       </div>
 
       {/* Conversations List */}
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-1">
-          {filteredConversations.length === 0 ? (
+          {displayConversations.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
               <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No conversations yet</p>
-              <p className="text-xs">Start a new conversation to get started</p>
+              {searchQuery ? (
+                <>
+                  <p className="text-sm">No results found</p>
+                  <p className="text-xs">Try different search terms</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm">No conversations yet</p>
+                  <p className="text-xs">Start a new conversation to get started</p>
+                </>
+              )}
             </div>
           ) : (
-            filteredConversations.map((conversation) => (
+            displayConversations.map((conversation) => {
+              // Find message matches for this conversation
+              const messageMatch = searchResults?.messageResults.find(
+                result => result.conversation.id === conversation.id
+              );
+
+              return (
               <div
                 key={conversation.id}
                 className={cn(
@@ -175,6 +243,34 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
                     <p className="text-xs text-muted-foreground mt-1">
                       {new Date(conversation.updatedAt).toLocaleDateString()}
                     </p>
+                    
+                    {/* Show message matches when searching */}
+                    {messageMatch && messageMatch.matchingMessages.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {messageMatch.matchingMessages.slice(0, 2).map((match, index) => (
+                          <div 
+                            key={match.message.id} 
+                            className="text-xs bg-muted/40 rounded px-2 py-1"
+                            style={{ borderLeft: '2px solid var(--primary, #22c55e)' }}
+                          >
+                            <div 
+                              className="text-muted-foreground leading-snug"
+                              style={{ fontSize: '0.92em', lineHeight: '1.3' }}
+                              dangerouslySetInnerHTML={{ 
+                                __html: match.highlights.length > 100 
+                                  ? match.highlights.substring(0, 100) + '...' 
+                                  : match.highlights 
+                              }}
+                            />
+                          </div>
+                        ))}
+                        {messageMatch.matchingMessages.length > 2 && (
+                          <div className="text-xs text-muted-foreground text-center opacity-70 mt-1">
+                            +{messageMatch.matchingMessages.length - 2} more matches
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}
@@ -234,7 +330,8 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
                   <div className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full" />
                 )}
               </div>
-            ))
+              );
+            })
           )}
         </div>
       </ScrollArea>

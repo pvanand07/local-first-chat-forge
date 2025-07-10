@@ -214,15 +214,18 @@ export const ChatInterface: React.FC = () => {
       setStreamingMessage(null);
       setStreamContent('');
       
-      // Update conversation list order
-      setConversations(prev => {
-        const updated = prev.map(c => 
-          c.id === activeConversationId 
-            ? { ...c, updatedAt: Date.now() } 
-            : c
-        );
-        return updated.sort((a, b) => b.updatedAt - a.updatedAt);
-      });
+      // Refresh conversation data to get updated title and timestamp
+      const updatedConversation = await conversationManager.getConversation(activeConversationId);
+      if (updatedConversation) {
+        setConversations(prev => {
+          const updated = prev.map(c => 
+            c.id === activeConversationId 
+              ? updatedConversation 
+              : c
+          );
+          return updated.sort((a, b) => b.updatedAt - a.updatedAt);
+        });
+      }
 
     } catch (error) {
       console.error('Failed to send message:', error);
