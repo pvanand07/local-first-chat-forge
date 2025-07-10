@@ -202,10 +202,14 @@ export const ChatInterface: React.FC = () => {
         content,
         (token: string) => {
           setStreamContent(prev => prev + token);
+        },
+        (userMessage: Message) => {
+          // Immediately show the user message
+          setMessages(prev => [...prev, userMessage]);
         }
       );
 
-      // Reload messages from database to get the latest state
+      // Reload messages from database to get the latest state (to get the AI message)
       await loadMessages(activeConversationId);
       setStreamingMessage(null);
       setStreamContent('');

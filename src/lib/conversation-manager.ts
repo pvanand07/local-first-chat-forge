@@ -126,6 +126,7 @@ class ConversationManager {
     conversationId: string, 
     content: string,
     onAIToken: (token: string) => void,
+    onUserMessage?: (userMessage: Message) => void,
     apiKey?: string
   ): Promise<{ userMessage: Message; aiMessage: Message }> {
     try {
@@ -147,6 +148,11 @@ class ConversationManager {
 
       // Clear cache to force reload from database
       this.cache.delete(conversationId);
+
+      // Immediately notify UI about user message
+      if (onUserMessage) {
+        onUserMessage(userMessage);
+      }
 
       // Get conversation history for AI context
       const messages = await this.getMessages(conversationId);
