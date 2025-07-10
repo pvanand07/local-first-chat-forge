@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import { FixedSizeList as List } from 'react-window';
 import { Message } from '@/lib/database';
 import { MessageItem } from './MessageItem';
 
@@ -17,13 +16,11 @@ export interface MessageListRef {
 
 export const MessageList = forwardRef<MessageListRef, MessageListProps>(
   ({ messages, isLoading, streamingMessage, streamContent, className }, ref) => {
-    const listRef = useRef<List>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
-      if (listRef.current) {
-        const totalItems = messages.length + (isLoading ? 1 : 0);
-        listRef.current.scrollToItem(Math.max(0, totalItems - 1), 'end');
+      if (containerRef.current) {
+        containerRef.current.scrollTop = containerRef.current.scrollHeight;
       }
     };
 
@@ -35,27 +32,7 @@ export const MessageList = forwardRef<MessageListRef, MessageListProps>(
       scrollToBottom();
     }, [messages.length, isLoading, streamContent]);
 
-    const renderRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
-      const isStreamingRow = isLoading && index === messages.length;
-      const message = index < messages.length ? messages[index] : streamingMessage;
-
-      if (!message) return null;
-
-      return (
-        <div style={style}>
-          <MessageItem
-            message={message}
-            isStreaming={isStreamingRow}
-            streamContent={isStreamingRow ? streamContent : undefined}
-          />
-        </div>
-      );
-    };
-
-    const itemSize = 100; // Approximate height per message
-    const totalItems = messages.length + (isLoading && streamingMessage ? 1 : 0);
-
-    if (totalItems === 0) {
+    if (messages.length === 0 && !isLoading) {
       return (
         <div className={`flex-1 flex items-center justify-center ${className}`}>
           <div className="text-center text-muted-foreground">
@@ -67,17 +44,26 @@ export const MessageList = forwardRef<MessageListRef, MessageListProps>(
     }
 
     return (
-      <div ref={containerRef} className={`flex-1 ${className}`}>
-        <List
-          ref={listRef}
-          height={containerRef.current?.clientHeight || 600}
-          itemCount={totalItems}
-          itemSize={itemSize}
-          width="100%"
-          className="chat-scroll"
-        >
-          {renderRow}
-        </List>
+      <div 
+        ref={containerRef} 
+        className={`flex-1 overflow-y-auto chat-scroll ${className}`}
+      >
+        <div className="flex flex-col">
+          {messages.map((message) => (
+            <MessageItem
+              key={message.id}
+              message={message}
+            />
+          ))}
+          
+          {isLoading && streamingMessage && (
+            <MessageItem
+              message={streamingMessage}
+              isStreaming={true}
+              streamContent={streamContent}
+            />
+          )}
+        </div>
       </div>
     );
   }
