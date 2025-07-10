@@ -8,24 +8,12 @@ export interface ChatMessage {
 }
 
 class AIService {
-  private cache = new Map<string, string>(); // Query hash -> Response
-  private readonly CACHE_SIZE_LIMIT = 100;
-
   async generateResponse(
     messages: ChatMessage[],
     conversationId: string,
     onChunk: (chunk: string) => void,
     apiKey?: string
   ): Promise<Message> {
-    const queryHash = this.hashMessages(messages);
-    
-    // Check cache first
-    if (this.cache.has(queryHash)) {
-      const content = this.cache.get(queryHash)!;
-      // Simulate streaming for cached responses
-      this.simulateStreaming(content, onChunk);
-      return this.createMessage(conversationId, content);
-    }
 
     // Use OpenRouter API key from environment or provided key
     const openRouterKey = apiKey || import.meta.env.VITE_OPENROUTER_API_KEY;
@@ -116,8 +104,6 @@ class AIService {
         }
       }
 
-      // Cache successful response
-      this.cacheResponse(queryHash, content);
       return this.createMessage(conversationId, content || "I apologize, but I couldn't generate a response. Please try again.");
 
     } catch (error) {
@@ -143,21 +129,6 @@ class AIService {
     }
   }
 
-  private simulateStreaming(content: string, onChunk: (chunk: string) => void) {
-    const words = content.split(' ');
-    let index = 0;
-    
-    const streamInterval = setInterval(() => {
-      if (index < words.length) {
-        const chunk = (index === 0 ? '' : ' ') + words[index];
-        onChunk(chunk);
-        index++;
-      } else {
-        clearInterval(streamInterval);
-      }
-    }, 50); // 50ms delay between words for realistic streaming effect
-  }
-
   private createMessage(conversationId: string, content: string): Message {
     return {
       id: uuidv4(),
@@ -168,36 +139,6 @@ class AIService {
       syncStatus: 'pending',
       vector: { [localDeviceId]: Date.now() }
     };
-  }
-
-  private hashMessages(messages: ChatMessage[]): string {
-    // Create a stable hash from the message history
-    const messageString = messages
-      .map(msg => `${msg.role}:${msg.content}`)
-      .join('|');
-    
-    // Simple hash function - in production, use a proper hash library
-    let hash = 0;
-    for (let i = 0; i < messageString.length; i++) {
-      const char = messageString.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return hash.toString();
-  }
-
-  private cacheResponse(hash: string, content: string) {
-    // Implement LRU cache
-    if (this.cache.size >= this.CACHE_SIZE_LIMIT) {
-      const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
-    }
-    this.cache.set(hash, content);
-  }
-
-  // Method to clear cache if needed
-  clearCache() {
-    this.cache.clear();
   }
 }
 

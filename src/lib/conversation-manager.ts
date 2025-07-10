@@ -145,10 +145,8 @@ class ConversationManager {
       await this.updateConversationTimestamp(conversationId);
       await this.addToSyncQueue('create', 'message', userMessage);
 
-      // Update cache immediately
-      if (this.cache.has(conversationId)) {
-        this.cache.get(conversationId)!.push(userMessage);
-      }
+      // Clear cache to force reload from database
+      this.cache.delete(conversationId);
 
       // Get conversation history for AI context
       const messages = await this.getMessages(conversationId);
@@ -169,10 +167,8 @@ class ConversationManager {
       await this.updateConversationTimestamp(conversationId);
       await this.addToSyncQueue('create', 'message', aiMessage);
 
-      // Update cache
-      if (this.cache.has(conversationId)) {
-        this.cache.get(conversationId)!.push(aiMessage);
-      }
+      // Clear cache to ensure fresh data on next load
+      this.cache.delete(conversationId);
 
       // Auto-generate conversation title if this is the first exchange
       if (messages.length === 1) { // Only user message exists

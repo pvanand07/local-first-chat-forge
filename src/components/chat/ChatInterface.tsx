@@ -197,7 +197,7 @@ export const ChatInterface: React.FC = () => {
       };
       setStreamingMessage(tempMessage);
 
-      const { userMessage, aiMessage } = await conversationManager.sendMessage(
+      await conversationManager.sendMessage(
         activeConversationId,
         content,
         (token: string) => {
@@ -205,8 +205,8 @@ export const ChatInterface: React.FC = () => {
         }
       );
 
-      // Update messages with the actual messages
-      setMessages(prev => [...prev, userMessage, aiMessage]);
+      // Reload messages from database to get the latest state
+      await loadMessages(activeConversationId);
       setStreamingMessage(null);
       setStreamContent('');
       
