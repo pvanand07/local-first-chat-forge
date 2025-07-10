@@ -49,7 +49,7 @@ class AIService {
           'X-Title': 'Local-First Chat'
         },
         body: JSON.stringify({
-          model: "microsoft/phi-3-mini-128k-instruct:free",
+          model: "openai/gpt-4o",
           messages: [
             {
               role: "system",
@@ -67,7 +67,13 @@ class AIService {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('OpenRouter API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
+        throw new Error(`API request failed: ${response.status} ${response.statusText}. ${errorText}`);
       }
 
       // Stream processing

@@ -82,14 +82,23 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">OpenRouter API Key</label>
-                  <Input
-                    type="password"
-                    placeholder="Enter your OpenRouter API key"
-                    className="mt-1"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Your API key is stored locally and never sent to our servers
+                  <label className="text-sm font-medium">OpenRouter API Key Status</label>
+                  <div className="mt-2 p-3 bg-muted rounded-md">
+                    {import.meta.env.VITE_OPENROUTER_API_KEY ? (
+                      <div className="flex items-center gap-2 text-green-600">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-sm">API key configured</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-red-600">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span className="text-sm">API key not configured</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Configure your OpenRouter API key in the .env file. 
+                    Copy .env.example to .env and add your key.
                   </p>
                 </div>
               </div>
