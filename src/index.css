@@ -2,127 +2,152 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Modern design system with soft gradients, muted palette, and airy layouts */
 
 @layer base {
   :root {
-    --background: 240 5% 4%;
-    --foreground: 0 0% 98%;
+    /* Base colors - darker grey light theme */
+    --background: 210 20% 91%;
+    --foreground: 222 47% 11%;
 
-    --card: 240 10% 8%;
-    --card-foreground: 0 0% 98%;
+    --card: 210 20% 93%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 240 10% 8%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 210 20% 93%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 142 76% 36%;
-    --primary-foreground: 355 10% 2%;
+    /* Primary - professional blue */
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 12%;
-    --secondary-foreground: 0 0% 98%;
+    /* Secondary - darker grey */
+    --secondary: 210 40% 87%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 240 5% 12%;
-    --muted-foreground: 240 5% 64%;
+    /* Muted colors - darker grey */
+    --muted: 210 40% 87%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 240 5% 16%;
-    --accent-foreground: 0 0% 98%;
+    /* Accent - darker gray */
+    --accent: 215 20% 85%;
+    --accent-foreground: 222 47% 11%;
 
+    /* Destructive - professional red */
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 210 20% 91%;
 
-    --border: 240 5% 16%;
-    --input: 240 5% 16%;
-    --ring: 142 76% 36%;
+    /* Borders and inputs - darker greys */
+    --border: 214 32% 78%;
+    --input: 210 20% 93%;
+    --ring: 221 83% 53%;
 
     --radius: 0.75rem;
 
-    /* Chat-specific colors */
-    --chat-bg: 240 5% 4%;
-    --chat-sidebar: 240 8% 6%;
-    --chat-message-user: 142 76% 36%;
-    --chat-message-assistant: 240 5% 12%;
-    --chat-message-user-fg: 355 10% 2%;
-    --chat-message-assistant-fg: 0 0% 98%;
-    --chat-input: 240 5% 8%;
-    --chat-border: 240 5% 16%;
+    /* Chat-specific colors - darker grey styling */
+    --chat-bg: linear-gradient(135deg, hsl(210 20% 91%) 0%, hsl(210 40% 89%) 100%);
+    --chat-sidebar: linear-gradient(180deg, hsl(210 40% 87%) 0%, hsl(215 25% 85%) 100%);
+    --chat-message-user: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(218 80% 58%) 100%);
+    --chat-message-assistant: linear-gradient(135deg, hsl(210 20% 93%) 0%, hsl(210 40% 89%) 100%);
+    --chat-message-user-fg: 0 0% 100%;
+    --chat-message-assistant-fg: 222 47% 11%;
+    --chat-input: linear-gradient(135deg, hsl(210 20% 93%) 0%, hsl(210 40% 90%) 100%);
+    --chat-border: 214 32% 78%;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(142 76% 46%));
-    --gradient-bg: linear-gradient(180deg, hsl(var(--background)), hsl(240 5% 6%));
+    /* Professional gradients - darker grey */
+    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(218 80% 58%) 25%, hsl(215 75% 63%) 100%);
+    --gradient-bg: linear-gradient(180deg, hsl(210 20% 91%) 0%, hsl(210 40% 89%) 50%, hsl(215 25% 87%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(210 20% 93%) 0%, hsl(210 40% 90%) 100%);
+    --gradient-muted: linear-gradient(135deg, hsl(210 40% 87%) 0%, hsl(215 25% 85%) 100%);
 
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --typing-animation: typing 2s steps(40, end);
+    /* Smooth transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-gentle: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-    /* Shadows */
-    --shadow-glow: 0 0 20px hsl(var(--primary) / 0.3);
-    --shadow-chat: 0 4px 20px hsl(240 5% 0% / 0.3);
+    /* Professional shadows */
+    --shadow-soft: 0 1px 3px hsl(0 0% 0% / 0.1), 0 1px 2px hsl(0 0% 0% / 0.06);
+    --shadow-medium: 0 4px 6px hsl(0 0% 0% / 0.1), 0 2px 4px hsl(0 0% 0% / 0.06);
+    --shadow-large: 0 10px 15px hsl(0 0% 0% / 0.1), 0 4px 6px hsl(0 0% 0% / 0.05);
+    --shadow-glow: 0 0 0 1px hsl(var(--primary) / 0.1), 0 2px 4px hsl(var(--primary) / 0.1);
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Accessible sidebar colors - darker grey theme */
+    --sidebar-background: 210 40% 87%;
+    --sidebar-foreground: 222 47% 15%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 20% 83%;
+    --sidebar-accent-foreground: 222 47% 20%;
+    --sidebar-border: 214 32% 74%;
+    --sidebar-ring: 221 83% 53%;
   }
 
-  .light {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+  .dark {
+    /* Deep dark theme matching #161618 */
+    --background: 240 4% 9%;
+    --foreground: 210 40% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 240 4% 11%;
+    --card-foreground: 210 40% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 240 4% 11%;
+    --popover-foreground: 210 40% 95%;
 
-    --primary: 142 76% 36%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary - accessible blue in dark mode */
+    --primary: 217 85% 65%;
+    --primary-foreground: 240 4% 9%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - subtle grays matching the deep theme */
+    --secondary: 240 4% 15%;
+    --secondary-foreground: 210 40% 92%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted colors for dark mode */
+    --muted: 240 4% 15%;
+    --muted-foreground: 215 20% 70%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - subtle dark accent */
+    --accent: 240 4% 18%;
+    --accent-foreground: 210 40% 92%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    /* Destructive */
+    --destructive: 0 65% 58%;
+    --destructive-foreground: 210 40% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 142 76% 36%;
+    /* Borders and inputs - matching deep theme */
+    --border: 240 4% 20%;
+    --input: 240 4% 13%;
+    --ring: 217 85% 65%;
 
-    /* Light mode chat colors */
-    --chat-bg: 0 0% 98%;
-    --chat-sidebar: 0 0% 96%;
-    --chat-message-user: 142 76% 36%;
-    --chat-message-assistant: 0 0% 96%;
-    --chat-message-user-fg: 0 0% 98%;
-    --chat-message-assistant-fg: 222.2 84% 4.9%;
-    --chat-input: 0 0% 100%;
-    --chat-border: 214.3 31.8% 91.4%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Deep dark chat colors matching #161618 theme */
+    --chat-bg: linear-gradient(135deg, hsl(240 4% 9%) 0%, hsl(240 4% 11%) 100%);
+    --chat-sidebar: linear-gradient(180deg, hsl(240 4% 11%) 0%, hsl(240 4% 13%) 100%);
+    --chat-message-user: linear-gradient(135deg, hsl(217 85% 65%) 0%, hsl(221 80% 60%) 100%);
+    --chat-message-assistant: linear-gradient(135deg, hsl(240 4% 13%) 0%, hsl(240 4% 15%) 100%);
+    --chat-message-user-fg: 0 0% 100%;
+    --chat-message-assistant-fg: 210 40% 92%;
+    --chat-input: linear-gradient(135deg, hsl(240 4% 13%) 0%, hsl(240 4% 15%) 100%);
+    --chat-border: 240 4% 20%;
+
+    /* Deep dark gradients matching #161618 theme */
+    --gradient-primary: linear-gradient(135deg, hsl(217 85% 65%) 0%, hsl(221 80% 60%) 25%, hsl(218 78% 62%) 100%);
+    --gradient-bg: linear-gradient(180deg, hsl(240 4% 9%) 0%, hsl(240 4% 11%) 50%, hsl(240 4% 13%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(240 4% 11%) 0%, hsl(240 4% 13%) 100%);
+    --gradient-muted: linear-gradient(135deg, hsl(240 4% 15%) 0%, hsl(240 4% 18%) 100%);
+
+    /* Deep dark shadows */
+    --shadow-soft: 0 1px 3px hsl(0 0% 0% / 0.3), 0 1px 2px hsl(0 0% 0% / 0.4);
+    --shadow-medium: 0 4px 6px hsl(0 0% 0% / 0.4), 0 2px 4px hsl(0 0% 0% / 0.3);
+    --shadow-large: 0 10px 15px hsl(0 0% 0% / 0.5), 0 4px 6px hsl(0 0% 0% / 0.4);
+    --shadow-glow: 0 0 0 1px hsl(var(--primary) / 0.3), 0 2px 4px hsl(var(--primary) / 0.2);
+
+    /* Deep dark sidebar */
+    --sidebar-background: 240 4% 11%;
+    --sidebar-foreground: 210 40% 92%;
+    --sidebar-primary: 217 85% 65%;
+    --sidebar-primary-foreground: 240 4% 9%;
+    --sidebar-accent: 240 4% 18%;
+    --sidebar-accent-foreground: 210 40% 92%;
+    --sidebar-border: 240 4% 20%;
+    --sidebar-ring: 217 85% 65%;
   }
 }
 
@@ -131,37 +156,137 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+  html {
+    /* Prevent zoom on input focus on iOS */
+    -webkit-text-size-adjust: 100%;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+    /* Mobile-first viewport */
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: hidden;
   }
 
-  /* Chat specific styles */
+  body {
+    @apply text-foreground;
+    background: var(--gradient-bg) !important;
+    background-color: hsl(var(--background)) !important;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    transition: var(--transition-gentle);
+    /* Prevent pull-to-refresh on mobile */
+    overscroll-behavior-y: none;
+    /* Better touch scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Mobile-aware height layout */
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* Improve touch targets on mobile */
+  @media (pointer: coarse) {
+    button, [role="button"], input, textarea, select {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* Enhanced chat styles with gradients and spacing */
   .chat-container {
-    background: hsl(var(--chat-bg));
+    background: var(--chat-bg) !important;
+    background-color: hsl(var(--background)) !important;
     transition: var(--transition-smooth);
+    overflow: hidden;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+  }
+
+  /* Message list scrolling improvements */
+  .message-list-container {
+    scroll-behavior: smooth;
+    scroll-padding-bottom: 9rem;
+  }
+
+  .message-list-container::-webkit-scrollbar {
+    width: 0.375rem;
+  }
+
+  .message-list-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .message-list-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, hsl(var(--muted)) 0%, hsl(var(--muted-foreground) / 0.8) 100%);
+    border-radius: 0.375rem;
+    transition: var(--transition-gentle);
+  }
+
+  .message-list-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, hsl(var(--muted-foreground)) 0%, hsl(var(--primary) / 0.8) 100%);
   }
 
   .message-user {
-    background: hsl(var(--chat-message-user));
+    background: var(--chat-message-user);
     color: hsl(var(--chat-message-user-fg));
-    border-radius: 1rem 1rem 0.25rem 1rem;
-    margin-left: 2rem;
+    border-radius: 1.25rem 1.25rem 0.375rem 1.25rem;
+    margin-left: 1.5rem;
+    padding: 0.75rem 1rem;
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(8px);
+    transition: var(--transition-gentle);
+  }
+
+  @media (min-width: 768px) {
+    .message-user {
+      border-radius: 1.5rem 1.5rem 0.5rem 1.5rem;
+      margin-left: 3rem;
+      padding: 1rem 1.25rem;
+    }
+  }
+
+  .message-user:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
   }
 
   .message-assistant {
-    background: hsl(var(--chat-message-assistant));
+    background: var(--chat-message-assistant);
     color: hsl(var(--chat-message-assistant-fg));
-    border-radius: 1rem 1rem 1rem 0.25rem;
-    margin-right: 2rem;
+    border-radius: 1.25rem 1.25rem 1.25rem 0.375rem;
+    margin-right: 1.5rem;
+    padding: 0.75rem 1rem;
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(8px);
+    border: 1px solid hsl(var(--border) / 0.5);
+    transition: var(--transition-gentle);
   }
 
+  @media (min-width: 768px) {
+    .message-assistant {
+      border-radius: 1.5rem 1.5rem 1.5rem 0.5rem;
+      margin-right: 3rem;
+      padding: 1rem 1.25rem;
+    }
+  }
+
+  .message-assistant:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
+  }
+
+  /* Enhanced animations */
   .typing-indicator {
-    animation: pulse 1.5s ease-in-out infinite;
+    animation: pulse 2s ease-in-out infinite;
   }
 
   .ai-cursor {
-    animation: blink 1s infinite;
+    animation: blink 1.2s infinite;
   }
 
   @keyframes blink {
@@ -169,15 +294,27 @@ All colors MUST be HSL.
     51%, 100% { opacity: 0; }
   }
 
-  .search-highlight {
-    background: hsl(var(--primary) / 0.3);
-    padding: 0.125rem 0.25rem;
-    border-radius: 0.25rem;
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
   }
 
-  /* Scrollbar styling */
+  .search-highlight {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.2) 0%, hsl(var(--primary) / 0.3) 100%);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.5rem;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Custom scrollbar with soft styling - only for chat messages */
   .chat-scroll::-webkit-scrollbar {
-    width: 0.5rem;
+    width: 0.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .chat-scroll::-webkit-scrollbar {
+      width: 0.375rem;
+    }
   }
 
   .chat-scroll::-webkit-scrollbar-track {
@@ -185,11 +322,290 @@ All colors MUST be HSL.
   }
 
   .chat-scroll::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted));
-    border-radius: 0.25rem;
+    background: linear-gradient(180deg, hsl(var(--muted)) 0%, hsl(var(--muted-foreground) / 0.8) 100%);
+    border-radius: 0.375rem;
+    transition: var(--transition-gentle);
   }
 
   .chat-scroll::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
+    background: linear-gradient(180deg, hsl(var(--muted-foreground)) 0%, hsl(var(--primary) / 0.8) 100%);
+  }
+
+  /* Sidebar accessibility enhancements */
+  .sidebar-content {
+    background: var(--chat-sidebar) !important;
+    background-color: hsl(var(--sidebar-background)) !important;
+    backdrop-filter: blur(8px);
+    transition: var(--transition-gentle);
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+
+  .sidebar-item {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    transition: var(--transition-gentle);
+    padding: 0.5rem 0.75rem;
+    margin: 0.125rem 0;
+  }
+
+  .sidebar-item:hover {
+    background: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(var(--secondary)) 100%);
+    border-color: hsl(var(--border));
+    transform: translateX(2px);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .sidebar-item:focus {
+    outline: 2px solid hsl(var(--ring) / 0.5);
+    outline-offset: 2px;
+    border-color: hsl(var(--ring));
+  }
+
+  .sidebar-item.active {
+    background: var(--gradient-primary);
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary) / 0.3);
+    box-shadow: var(--shadow-medium);
+  }
+
+  .sidebar-header {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    border-bottom: 1px solid hsl(var(--border));
+    backdrop-filter: blur(8px);
+    padding: 1rem;
+  }
+
+  .sidebar-footer {
+    background: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--background)) 100%);
+    border-top: 1px solid hsl(var(--border));
+    backdrop-filter: blur(8px);
+    padding: 0.75rem 1rem;
+  }
+
+  /* Hide scrollbars for sidebar and input components */
+  .sidebar-scroll, .input-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .sidebar-scroll::-webkit-scrollbar,
+  .input-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Mobile-specific styles */
+  @media (max-width: 767px) {
+    /* Hide scrollbars on mobile for cleaner look */
+    .chat-scroll {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    
+    .chat-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Mobile message list scrolling */
+    .message-list-container {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      scroll-padding-bottom: 10rem;
+    }
+
+    .message-list-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Better spacing for mobile */
+    .message-user, .message-assistant {
+      margin-left: 0.5rem;
+      margin-right: 0.5rem;
+    }
+
+    /* Mobile sidebar improvements */
+    .sidebar-item {
+      padding: 0.75rem 1rem;
+      margin: 0.25rem 0;
+      min-height: 44px; /* Better touch targets */
+    }
+
+    .sidebar-header, .sidebar-footer {
+      padding: 1rem;
+    }
+
+    /* Improved mobile sidebar drawer overlay */
+    .sidebar-overlay {
+      background: hsl(0 0% 0% / 0.5);
+      backdrop-filter: blur(4px);
+      transition: var(--transition-gentle);
+    }
+
+    /* Mobile input bar keyboard handling */
+    .chat-input-floating {
+      position: fixed !important;
+      bottom: env(keyboard-inset-height, 0.75rem) !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      margin: 0 !important;
+      max-width: calc(100vw - 1.5rem) !important;
+      width: calc(100vw - 1.5rem) !important;
+      z-index: 1000 !important;
+      transition: bottom 0.3s ease-in-out !important;
+    }
+
+    /* Ensure input stays above keyboard when focused */
+    .chat-input-floating:focus-within {
+      bottom: calc(env(keyboard-inset-height, 0px) + 0.75rem) !important;
+    }
+    
+    /* Adjust message list padding on mobile for keyboard */
+    .mobile-keyboard-padding {
+      padding-bottom: calc(9rem + env(keyboard-inset-height, 0px)) !important;
+    }
+
+    /* Prevent layout shifts */
+    html, body {
+      position: fixed !important;
+      width: 100% !important;
+    }
+  }
+
+  /* Enhanced component styles */
+  .card-soft {
+    background: var(--gradient-card) !important;
+    background-color: hsl(var(--card)) !important;
+    border: 1px solid hsl(var(--border) / 0.6);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(8px);
+    transition: var(--transition-gentle);
+  }
+
+  .card-soft:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+  }
+
+  .input-soft {
+    background: var(--chat-input);
+    border: 1px solid hsl(var(--border) / 0.6);
+    backdrop-filter: blur(8px);
+    transition: var(--transition-gentle);
+  }
+
+  .input-soft:focus {
+    box-shadow: var(--shadow-glow);
+    border-color: hsl(var(--primary) / 0.8);
+  }
+
+  .button-soft {
+    background: var(--gradient-primary);
+    border: none;
+    box-shadow: var(--shadow-soft);
+    transition: var(--transition-spring);
+  }
+
+  .button-soft:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+  }
+
+  .button-soft:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* Floating input styles */
+  .chat-input-floating {
+    position: relative;
+    background: hsl(var(--card)) !important;
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px hsl(0 0% 0% / 0.1), 0 4px 16px hsl(0 0% 0% / 0.08);
+    backdrop-filter: blur(16px);
+    transition: var(--transition-gentle);
+    margin: 1rem auto;
+    z-index: 10;
+    max-width: 600px;
+    width: calc(100% - 2rem);
+  }
+
+  .dark .chat-input-floating {
+    background: hsl(var(--card)) !important;
+    border: 1px solid hsl(var(--border) / 0.3);
+    box-shadow: 0 8px 32px hsl(0 0% 0% / 0.4), 0 4px 16px hsl(0 0% 0% / 0.3);
+  }
+
+  .chat-input-floating:hover {
+    border-color: hsl(var(--border) / 0.7);
+    box-shadow: 0 12px 40px hsl(0 0% 0% / 0.15), 0 6px 20px hsl(0 0% 0% / 0.1);
+  }
+
+  .dark .chat-input-floating:hover {
+    border-color: hsl(var(--border) / 0.5);
+    box-shadow: 0 12px 40px hsl(0 0% 0% / 0.5), 0 6px 20px hsl(0 0% 0% / 0.4);
+  }
+
+  .chat-input-floating:focus-within {
+    border-color: hsl(var(--primary) / 0.5);
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1), 0 12px 40px hsl(0 0% 0% / 0.15);
+  }
+
+  .dark .chat-input-floating:focus-within {
+    border-color: hsl(var(--primary) / 0.6);
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.2), 0 12px 40px hsl(0 0% 0% / 0.5);
+  }
+
+  .chat-input-textarea {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    resize: none !important;
+    outline: none !important;
+    padding: 1.25rem 4rem 1.25rem 1.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: 1.5rem;
+  }
+
+  .chat-input-textarea:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .chat-input-send-button {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    top: 1rem;
+    aspect-ratio: 1;
+    width: auto;
+    height: auto;
+    min-height: 2.5rem;
+    border-radius: 0.75rem;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-gentle);
+  }
+
+  .chat-input-send-button:hover:not(:disabled) {
+    background: hsl(var(--primary) / 0.9);
+    transform: scale(1.05);
+  }
+
+  .chat-input-send-button:disabled {
+    background: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    cursor: not-allowed;
+    transform: none;
   }
 }

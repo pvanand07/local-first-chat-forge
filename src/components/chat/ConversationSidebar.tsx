@@ -100,19 +100,28 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
 
   return (
     <div className={cn(
-      "w-80 bg-chat-sidebar border-r border-chat-border flex flex-col",
+      "w-80 h-screen flex flex-col backdrop-blur-lg sidebar-content",
       className
     )}>
       {/* Header */}
-      <div className="p-4 border-b border-chat-border">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-primary" />
+      <div className="p-4 md:p-6 border-b border-chat-border/60">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <h2 className="text-base md:text-lg font-semibold flex items-center gap-2 md:gap-3 bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+            <MessageSquare className="h-4 md:h-5 w-4 md:w-5 text-primary" />
             Conversations
           </h2>
           <Dialog>
             <DialogTrigger asChild>
-              <Button size="sm" variant="outline">
+              <Button 
+                size="sm" 
+                variant="outline"
+                className={cn(
+                  "bg-gradient-to-r from-background to-secondary/30",
+                  "border-border/60 hover:border-primary/50",
+                  "shadow-sm hover:shadow-md transition-all duration-300",
+                  "hover:scale-105 active:scale-95"
+                )}
+              >
                 <Settings className="h-4 w-4" />
               </Button>
             </DialogTrigger>
@@ -148,35 +157,43 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
 
         <Button 
           onClick={onCreateConversation}
-          className="w-full mb-3"
+          className={cn(
+            "w-full mb-3 md:mb-4 h-10 md:h-11 text-sm font-medium",
+            "button-soft"
+          )}
           disabled={isLoading}
         >
           <Plus className="h-4 w-4 mr-2" />
-          New Conversation
+          <span className="hidden sm:inline">New Conversation</span>
+          <span className="sm:hidden">New Chat</span>
         </Button>
 
         {/* Search */}
         <div className="relative">
-          <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+          <Search className="h-4 w-4 absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground/70" />
           <Input
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
               onSearch(e.target.value);
             }}
-            placeholder="Search conversations and messages..."
-            className="pl-10"
+            placeholder="Search conversations..."
+            className={cn(
+              "pl-10 md:pl-11 pr-9 md:pr-10 h-10 md:h-11 rounded-lg md:rounded-xl text-sm",
+              "input-soft",
+              "focus:ring-2 focus:ring-primary/30 focus:border-primary/60"
+            )}
           />
           {isSearching && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            <div className="absolute right-3 md:right-4 top-1/2 transform -translate-y-1/2">
+              <div className="animate-spin rounded-full h-3 md:h-4 w-3 md:w-4 border-b-2 border-primary"></div>
             </div>
           )}
         </div>
         
         {/* Search results info */}
         {searchQuery && searchResults && (
-          <div className="mt-2 text-xs text-muted-foreground">
+          <div className="mt-3 px-1 text-xs text-muted-foreground/80 font-medium">
             {searchResults.conversations.length} conversations found
             {hasMessageMatches && ` (${searchResults.messageResults.length} with matching messages)`}
           </div>
@@ -184,8 +201,8 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
       </div>
 
       {/* Conversations List */}
-      <ScrollArea className="flex-1">
-        <div className="p-2 space-y-1">
+      <ScrollArea className="flex-1 sidebar-scroll">
+        <div className="p-2 md:p-3 space-y-1 md:space-y-2">
           {displayConversations.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
               <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -212,11 +229,11 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
               <div
                 key={conversation.id}
                 className={cn(
-                  "group relative rounded-lg p-3 cursor-pointer transition-colors",
-                  "hover:bg-accent/50",
+                  "group relative rounded-lg md:rounded-xl p-3 md:p-4 cursor-pointer transition-all duration-300",
+                  "hover:shadow-sm active:scale-[0.98] md:hover:scale-[1.02]",
                   activeConversationId === conversation.id 
-                    ? "bg-primary/10 border border-primary/20" 
-                    : "border border-transparent"
+                    ? "card-soft border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10 shadow-md" 
+                    : "card-soft border-transparent hover:border-border/40"
                 )}
                 onClick={() => onSelectConversation(conversation.id)}
               >

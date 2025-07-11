@@ -7,7 +7,8 @@ import { MessageList, MessageListRef } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { ConversationSidebar } from './ConversationSidebar';
 import { Button } from '@/components/ui/button';
-import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { Wifi, WifiOff, RefreshCw, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const ChatInterface: React.FC = () => {
@@ -20,6 +21,9 @@ export const ChatInterface: React.FC = () => {
   const [streamingMessage, setStreamingMessage] = useState<Message | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [syncStatus, setSyncStatus] = useState<any>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   const messageListRef = useRef<MessageListRef>(null);
   const { toast } = useToast();
@@ -28,12 +32,35 @@ export const ChatInterface: React.FC = () => {
   useEffect(() => {
     initializeConversations();
     
+    // Mobile detection and resize handler
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      // On desktop, show sidebar by default; on mobile, hide by default
+      if (!mobile && !isSidebarOpen) {
+        setIsSidebarOpen(true);
+      }
+      
+      // Detect keyboard on mobile
+      if (mobile) {
+        const currentHeight = window.visualViewport?.height || window.innerHeight;
+        const standardHeight = window.screen.height;
+        const keyboardVisible = currentHeight < standardHeight * 0.75;
+        setIsKeyboardVisible(keyboardVisible);
+      }
+    };
+    
+    // Initial check
+    checkMobile();
+    
     // Network status listeners
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    window.addEventListener('resize', checkMobile);
+    window.visualViewport?.addEventListener('resize', checkMobile);
     
     // Sync status polling
     const syncStatusInterval = setInterval(updateSyncStatus, 5000);
@@ -41,6 +68,8 @@ export const ChatInterface: React.FC = () => {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('resize', checkMobile);
+      window.visualViewport?.removeEventListener('resize', checkMobile);
       clearInterval(syncStatusInterval);
     };
   }, []);
@@ -258,42 +287,113 @@ export const ChatInterface: React.FC = () => {
     }
   };
 
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
   return (
-    <div className="h-screen flex bg-chat-bg">
+    <div className="flex chat-container relative">
+      {/* Mobile Backdrop */}
+      {isMobile && isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+
       {/* Sidebar */}
-      <ConversationSidebar
-        conversations={conversations}
-        activeConversationId={activeConversationId}
-        onSelectConversation={handleSelectConversation}
-        onCreateConversation={handleCreateConversation}
-        onDeleteConversation={handleDeleteConversation}
-        onRenameConversation={handleRenameConversation}
-        onSearch={handleSearch}
-        isLoading={isLoadingConversations}
-      />
+      <div className={cn(
+        "relative z-50 transition-transform duration-300 ease-in-out",
+        isMobile ? (
+          isSidebarOpen 
+            ? "fixed inset-y-0 left-0 w-80 transform translate-x-0" 
+            : "fixed inset-y-0 left-0 w-80 transform -translate-x-full"
+        ) : (
+          isSidebarOpen 
+            ? "w-80 flex-shrink-0" 
+            : "w-0 overflow-hidden"
+        )
+      )}>
+        <ConversationSidebar
+          conversations={conversations}
+          activeConversationId={activeConversationId}
+          onSelectConversation={(id) => {
+            handleSelectConversation(id);
+            if (isMobile) closeSidebar();
+          }}
+          onCreateConversation={() => {
+            handleCreateConversation();
+            if (isMobile) closeSidebar();
+          }}
+          onDeleteConversation={handleDeleteConversation}
+          onRenameConversation={handleRenameConversation}
+          onSearch={handleSearch}
+          isLoading={isLoadingConversations}
+          className="card-soft border-r h-full"
+        />
+      </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0 h-screen">
         {/* Header */}
-        <div className="border-b border-chat-border p-4 bg-chat-input">
+        <div className="border-b border-chat-border/60 p-4 md:p-6 input-soft backdrop-blur-lg">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold">
-              {activeConversationId 
-                ? conversations.find(c => c.id === activeConversationId)?.title || 'Chat'
-                : 'Local-First AI Chat'
-              }
-            </h1>
+            <div className="flex items-center gap-3">
+              {/* Mobile Menu Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleSidebar}
+                className={cn(
+                  "md:hidden",
+                  "bg-gradient-to-r from-background to-secondary/30",
+                  "border-border/60 hover:border-primary/50",
+                  "shadow-sm hover:shadow-md transition-all duration-300",
+                  "hover:scale-105 active:scale-95"
+                )}
+              >
+                {isSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              </Button>
+
+              {/* Desktop Sidebar Toggle */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleSidebar}
+                className={cn(
+                  "hidden md:flex",
+                  "bg-gradient-to-r from-background to-secondary/30",
+                  "border-border/60 hover:border-primary/50",
+                  "shadow-sm hover:shadow-md transition-all duration-300",
+                  "hover:scale-105 active:scale-95"
+                )}
+              >
+                <Menu className="h-4 w-4" />
+              </Button>
+
+              <h1 className="text-lg md:text-xl font-semibold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent truncate">
+                {activeConversationId 
+                  ? conversations.find(c => c.id === activeConversationId)?.title || 'Chat'
+                  : 'Local-First AI Chat'
+                }
+              </h1>
+            </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 md:gap-3">
               {/* Network Status */}
               <div className={cn(
-                "flex items-center gap-1 text-xs px-2 py-1 rounded-full",
+                "hidden sm:flex items-center gap-2 text-xs px-2 md:px-3 py-1 md:py-2 rounded-full backdrop-blur-sm transition-all duration-300",
+                "border border-opacity-60 shadow-sm",
                 isOnline 
-                  ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                  : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                  ? "bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border-green-200 dark:from-green-950/50 dark:to-emerald-950/50 dark:text-green-300 dark:border-green-800"
+                  : "bg-gradient-to-r from-red-50 to-rose-50 text-red-700 border-red-200 dark:from-red-950/50 dark:to-rose-950/50 dark:text-red-300 dark:border-red-800"
               )}>
                 {isOnline ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-                {isOnline ? 'Online' : 'Offline'}
+                <span className="font-medium hidden md:inline">{isOnline ? 'Online' : 'Offline'}</span>
               </div>
 
               {/* Sync Status */}
@@ -302,39 +402,61 @@ export const ChatInterface: React.FC = () => {
                   size="sm"
                   variant="outline"
                   onClick={handleForceSync}
-                  className="text-xs"
+                  className={cn(
+                    "hidden sm:flex text-xs px-2 md:px-3 py-1 md:py-2 h-auto",
+                    "bg-gradient-to-r from-background to-secondary/30",
+                    "border-border/60 hover:border-primary/50",
+                    "shadow-sm hover:shadow-md transition-all duration-300",
+                    "hover:scale-105 active:scale-95"
+                  )}
                 >
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  {syncStatus.pendingItems > 0 
-                    ? `${syncStatus.pendingItems} pending`
-                    : 'Synced'
-                  }
+                  <RefreshCw className="h-3 w-3 mr-1 md:mr-2" />
+                  <span className="font-medium hidden md:inline">
+                    {syncStatus.pendingItems > 0 
+                      ? `${syncStatus.pendingItems} pending`
+                      : 'Synced'
+                    }
+                  </span>
                 </Button>
               )}
+
+              {/* Theme Toggle */}
+              <ThemeToggle 
+                variant="dropdown" 
+                size="sm" 
+                className="shadow-sm"
+              />
             </div>
           </div>
         </div>
 
         {/* Messages */}
-        <MessageList
-          ref={messageListRef}
-          messages={messages}
-          isLoading={isLoading}
-          streamingMessage={streamingMessage}
-          streamContent={streamContent}
-          className="flex-1"
-        />
+        <div className="flex-1 relative overflow-hidden">
+          <MessageList
+            ref={messageListRef}
+            messages={messages}
+            isLoading={isLoading}
+            streamingMessage={streamingMessage}
+            streamContent={streamContent}
+            className={cn(
+              "absolute inset-0 p-2 md:p-4 pb-40 md:pb-44 message-list-container",
+              isMobile && isKeyboardVisible && "mobile-keyboard-padding"
+            )}
+          />
 
-        {/* Input */}
-        <ChatInput
-          onSendMessage={handleSendMessage}
-          disabled={isLoading}
-          placeholder={
-            activeConversationId 
-              ? "Type your message..."
-              : "Start a new conversation..."
-          }
-        />
+          {/* Floating Input */}
+          <div className="absolute bottom-0 left-0 right-0 z-20">
+            <ChatInput
+              onSendMessage={handleSendMessage}
+              disabled={isLoading}
+              placeholder={
+                activeConversationId 
+                  ? "Type your message..."
+                  : "Start a new conversation..."
+              }
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

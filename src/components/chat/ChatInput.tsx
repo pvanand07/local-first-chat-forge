@@ -18,6 +18,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   className
 }) => {
   const [message, setMessage] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -36,6 +38,22 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
+  const handleFocus = () => {
+    if (isMobile) {
+      setIsKeyboardVisible(true);
+      // Small delay to ensure keyboard is fully shown
+      setTimeout(() => {
+        textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    }
+  };
+
+  const handleBlur = () => {
+    if (isMobile) {
+      setIsKeyboardVisible(false);
+    }
+  };
+
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -50,51 +68,74 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     adjustTextareaHeight();
   }, [message]);
 
+  // Mobile keyboard handling
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    const handleResize = () => {
+      checkMobile();
+      // Detect virtual keyboard on mobile
+      if (window.innerWidth < 768) {
+        const currentHeight = window.visualViewport?.height || window.innerHeight;
+        const standardHeight = window.screen.height;
+        const keyboardVisible = currentHeight < standardHeight * 0.75;
+        setIsKeyboardVisible(keyboardVisible);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', handleResize);
+    window.visualViewport?.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   return (
-    <div className={cn(
-      "border-t bg-chat-input p-4",
-      className
-    )}>
-      <form onSubmit={handleSubmit} className="flex gap-2 items-end">
-        <div className="flex-1 relative">
+    <div className={cn("p-0", className)}>
+      <div className="chat-input-floating">
+        <form onSubmit={handleSubmit} className="relative">
           <Textarea
             ref={textareaRef}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             placeholder={placeholder}
             disabled={disabled}
-            className={cn(
-              "min-h-[44px] max-h-[120px] resize-none pr-12",
-              "bg-chat-input border-chat-border",
-              "focus:ring-primary focus:border-primary",
-              "placeholder:text-muted-foreground"
-            )}
+            className="chat-input-textarea min-h-[3.5rem] max-h-[8rem] w-full"
             rows={1}
           />
           
-          <Button
+          <button
             type="submit"
-            size="sm"
             disabled={!message.trim() || disabled}
-            className={cn(
-              "absolute right-2 bottom-2 h-8 w-8 p-0",
-              "bg-primary hover:bg-primary/90",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
-            )}
+            className="chat-input-send-button"
           >
             {disabled ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Send className="h-4 w-4" />
             )}
-          </Button>
+          </button>
+        </form>
+        
+        <div className="flex justify-between items-center px-6 pb-4 text-xs text-muted-foreground/80">
+          <span className="font-medium hidden sm:inline">Press Enter to send, Shift+Enter for new line</span>
+          <span className="font-medium sm:hidden text-xs">Enter to send</span>
+          <span className={cn(
+            "px-2 py-1 rounded-full bg-muted/30 font-medium transition-colors text-xs",
+            message.length > 1800 && "text-orange-500 bg-orange-50 dark:bg-orange-950/30",
+            message.length > 1950 && "text-red-500 bg-red-50 dark:bg-red-950/30"
+          )}>
+            {message.length}/2000
+          </span>
         </div>
-      </form>
-      
-      <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
-        <span>Press Enter to send, Shift+Enter for new line</span>
-        <span>{message.length}/2000</span>
       </div>
     </div>
   );
