@@ -6,14 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, MessageSquare } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Loader2, MessageSquare, Chrome } from 'lucide-react';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [activeTab, setActiveTab] = useState('signin');
-  const { user, loading, signIn, signUp } = useAuth();
+  const { user, loading, signIn, signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
@@ -46,6 +47,14 @@ export default function Auth() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    await signInWithGoogle();
+  };
+
+  const handleContinueAsGuest = () => {
+    navigate('/');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -71,6 +80,32 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Google Sign In Button */}
+          <Button 
+            onClick={handleGoogleSignIn}
+            variant="outline" 
+            className="w-full mb-4"
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Chrome className="mr-2 h-4 w-4" />
+            )}
+            Continue with Google
+          </Button>
+
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex items-center">
+              <Separator />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with email
+              </span>
+            </div>
+          </div>
+
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -170,6 +205,16 @@ export default function Auth() {
               </form>
             </TabsContent>
           </Tabs>
+
+          <div className="mt-6">
+            <Button 
+              onClick={handleContinueAsGuest}
+              variant="ghost" 
+              className="w-full text-muted-foreground"
+            >
+              Continue as guest
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

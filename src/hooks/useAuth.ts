@@ -73,6 +73,39 @@ export function useAuth() {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`
+        }
+      });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Google sign in failed",
+          description: error.message,
+        });
+        return { error };
+      }
+
+      return { error: null };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+      toast({
+        variant: "destructive",
+        title: "Google sign in failed",
+        description: message,
+      });
+      return { error: { message } };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
@@ -139,6 +172,7 @@ export function useAuth() {
     loading,
     signUp,
     signIn,
+    signInWithGoogle,
     signOut,
   };
 }

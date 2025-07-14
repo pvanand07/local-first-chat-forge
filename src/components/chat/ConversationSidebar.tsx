@@ -5,9 +5,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, MessageSquare, Search, MoreHorizontal, Edit2, Trash2, Settings, FileText, LogOut, User } from 'lucide-react';
+import { Plus, MessageSquare, Search, MoreHorizontal, Edit2, Trash2, Settings, FileText, LogOut, User, UserPlus } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'react-router-dom';
 import { Conversation, Message } from '@/lib/database';
 import { conversationManager } from '@/lib/conversation-manager';
 import { cn } from '@/lib/utils';
@@ -125,17 +126,28 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
                   "hover:scale-105 active:scale-95"
                 )}
               >
-                <User className="h-4 w-4" />
+                {user ? <User className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem disabled className="text-xs text-muted-foreground">
-                {user?.email}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={signOut} className="text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign out
-              </DropdownMenuItem>
+              {user ? (
+                <>
+                  <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+                    {user.email}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={signOut} className="text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <DropdownMenuItem asChild>
+                  <Link to="/auth" className="w-full">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Sign in / Sign up
+                  </Link>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

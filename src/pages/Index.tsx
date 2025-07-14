@@ -8,11 +8,8 @@ const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
+  // No longer redirect to auth - allow guest usage
+  // Users can access /auth manually or through the sidebar
 
   if (loading) {
     return (
@@ -20,10 +17,6 @@ const Index = () => {
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   return <ChatInterface />;
