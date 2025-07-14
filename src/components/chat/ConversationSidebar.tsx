@@ -5,7 +5,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, MessageSquare, Search, MoreHorizontal, Edit2, Trash2, Settings, FileText } from 'lucide-react';
+import { Plus, MessageSquare, Search, MoreHorizontal, Edit2, Trash2, Settings, FileText, LogOut, User } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/hooks/useAuth';
 import { Conversation, Message } from '@/lib/database';
 import { conversationManager } from '@/lib/conversation-manager';
 import { cn } from '@/lib/utils';
@@ -50,6 +52,7 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
   const [editTitle, setEditTitle] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResults | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const { user, signOut } = useAuth();
 
   // Perform search when query changes
   useEffect(() => {
@@ -110,8 +113,8 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
             <MessageSquare className="h-4 md:h-5 w-4 md:w-5 text-primary" />
             Conversations
           </h2>
-          <Dialog>
-            <DialogTrigger asChild>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button 
                 size="sm" 
                 variant="outline"
@@ -122,37 +125,19 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
                   "hover:scale-105 active:scale-95"
                 )}
               >
-                <Settings className="h-4 w-4" />
+                <User className="h-4 w-4" />
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Chat Settings</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">OpenRouter API Key Status</label>
-                  <div className="mt-2 p-3 bg-muted rounded-md">
-                    {import.meta.env.VITE_OPENROUTER_API_KEY ? (
-                      <div className="flex items-center gap-2 text-green-600">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-sm">API key configured</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-red-600">
-                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                        <span className="text-sm">API key not configured</span>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Configure your OpenRouter API key in the .env file. 
-                    Copy .env.example to .env and add your key.
-                  </p>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+                {user?.email}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={signOut} className="text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <Button 
