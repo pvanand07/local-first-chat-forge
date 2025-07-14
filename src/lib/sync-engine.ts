@@ -2,6 +2,10 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { db, localDeviceId, SyncItem, Conversation, Message } from './database';
 import { supabase } from '@/integrations/supabase/client';
 
+// Event system for sync notifications
+export type SyncEventType = 'conversation-changed' | 'message-changed' | 'sync-completed';
+export type SyncEventListener = (data?: any) => void;
+
 class SyncEngine {
   private isOnline = navigator.onLine;
   private syncInterval = 30000; // 30 seconds
@@ -10,11 +14,28 @@ class SyncEngine {
   private retryStrategy = [1000, 5000, 15000, 30000]; // Retry delays in ms
   private syncIntervalId: number | null = null;
   private realtimeChannel: any = null;
+  private eventListeners: Map<SyncEventType, Set<SyncEventListener>> = new Map();
 
   constructor() {
     this.initNetworkListeners();
     this.initRealtime();
     this.startSyncLoop();
+  }
+
+  // Event system methods
+  on(event: SyncEventType, listener: SyncEventListener) {
+    if (!this.eventListeners.has(event)) {
+      this.eventListeners.set(event, new Set());
+    }
+    this.eventListeners.get(event)!.add(listener);
+  }
+
+  off(event: SyncEventType, listener: SyncEventListener) {
+    this.eventListeners.get(event)?.delete(listener);
+  }
+
+  private emit(event: SyncEventType, data?: any) {
+    this.eventListeners.get(event)?.forEach(listener => listener(data));
   }
 
   private initNetworkListeners() {
@@ -105,6 +126,7 @@ class SyncEngine {
       await this.pullChanges();
       
       console.log('Sync completed successfully');
+      this.emit('sync-completed');
     } catch (error) {
       console.error('Sync error:', error);
     } finally {
@@ -146,8 +168,10 @@ class SyncEngine {
         if (item.operation !== 'delete') {
           if (item.entityType === 'conversation') {
             await db.conversations.update(item.entityId, { syncStatus: 'synced' });
+            this.emit('conversation-changed', { id: item.entityId });
           } else {
             await db.messages.update(item.entityId, { syncStatus: 'synced' });
+            this.emit('message-changed', { id: item.entityId });
           }
         }
         
@@ -288,12 +312,14 @@ class SyncEngine {
 
     if (!local) {
       await db.conversations.add(remote);
+      this.emit('conversation-changed', { id: remote.id });
       return;
     }
 
     // Use vector clocks for conflict resolution
     const winner = this.resolveConflict(local, remote);
     await db.conversations.put(winner);
+    this.emit('conversation-changed', { id: remote.id });
   }
 
   private async mergeMessage(remote: Message) {
@@ -302,17 +328,20 @@ class SyncEngine {
     if (!local) {
       await db.messages.add(remote);
       await db.addMessageToSearch(remote);
+      this.emit('message-changed', { id: remote.id });
       return;
     }
 
     // Use vector clocks for conflict resolution
     const winner = this.resolveConflict(local, remote);
     await db.messages.put(winner);
+    this.emit('message-changed', { id: remote.id });
   }
 
   private async handleRemoteConversationChange(payload: any) {
     if (payload.eventType === 'DELETE') {
       await db.conversations.delete(payload.old.id);
+      this.emit('conversation-changed', { id: payload.old.id });
       return;
     }
 
@@ -333,6 +362,7 @@ class SyncEngine {
   private async handleRemoteMessageChange(payload: any) {
     if (payload.eventType === 'DELETE') {
       await db.messages.delete(payload.old.id);
+      this.emit('message-changed', { id: payload.old.id });
       return;
     }
 

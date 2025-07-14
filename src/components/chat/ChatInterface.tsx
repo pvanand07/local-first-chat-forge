@@ -32,6 +32,34 @@ export const ChatInterface: React.FC = () => {
   useEffect(() => {
     initializeConversations();
     
+    // Listen for sync events to refresh conversations
+    const handleConversationChange = () => {
+      // Refresh conversations list when sync detects changes
+      initializeConversations();
+    };
+
+    const handleSyncCompleted = () => {
+      // Refresh conversations after sync completes
+      initializeConversations();
+    };
+
+    const handleMessageChange = () => {
+      // Refresh messages for the active conversation if a message changed
+      // Use a timeout to batch multiple rapid changes
+      setTimeout(() => {
+        setMessages(prev => {
+          if (activeConversationId) {
+            loadMessages(activeConversationId);
+          }
+          return prev;
+        });
+      }, 100);
+    };
+
+    syncEngine.on('conversation-changed', handleConversationChange);
+    syncEngine.on('sync-completed', handleSyncCompleted);
+    syncEngine.on('message-changed', handleMessageChange);
+    
     // Mobile detection and resize handler
     const checkMobile = () => {
       const mobile = window.innerWidth < 768;
@@ -66,6 +94,11 @@ export const ChatInterface: React.FC = () => {
     const syncStatusInterval = setInterval(updateSyncStatus, 5000);
     
     return () => {
+      // Clean up sync event listeners
+      syncEngine.off('conversation-changed', handleConversationChange);
+      syncEngine.off('sync-completed', handleSyncCompleted);
+      syncEngine.off('message-changed', handleMessageChange);
+      
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('resize', checkMobile);
